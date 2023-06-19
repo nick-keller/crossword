@@ -1,0 +1,181 @@
+:root {
+  --grid-width: 2;
+  --boder-color: #706e6e;
+  --cell-width: 60px;
+  --arrow-head-length: 80%;
+}
+
+.grid {
+  width: calc(var(--grid-width) * var(--cell-width) + 1px);
+  max-width: 100%;
+  display: grid;
+  grid-template-columns: repeat(var(--grid-width), 1fr);
+  margin-top: 20px;
+  box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
+  border: solid 1px var(--boder-color);
+  border-left-width: 0;
+  border-top-width: 0;
+}
+
+.cell {
+  aspect-ratio: 1;
+  border: solid 1px var(--boder-color);
+  border-right-width: 0;
+  border-bottom-width: 0;
+  position: relative;
+}
+
+.cell:hover:after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background-color: #13d9ff;
+  opacity: 0.2;
+  z-index: 10;
+  box-shadow: rgba(136, 225, 239, 0.25) 0px 13px 27px -5px, rgba(70, 184, 208, 0.3) 0px 8px 16px -8px;
+}
+
+.arrow {
+  position: absolute;
+  z-index: 1;
+  opacity: 0.5;
+}
+
+.arrow.fixed {
+  opacity: 1;
+}
+
+.arrow:after {
+  content: "";
+  position: absolute;
+  aspect-ratio: 1;
+  background: var(--boder-color);
+  z-index: 1;
+}
+
+.arrow.bottom.down {
+  top: 100%;
+  left: 50%;
+  height: 20%;
+  border-left: 1px solid var(--boder-color);
+}
+
+.arrow.bottom.down:after {
+  top: 100%;
+  transform: translateX(-50%);
+  height: var(--arrow-head-length);
+  clip-path: polygon(50% 100%, 0% 0%, 100% 0%);
+}
+
+.arrow.right.across {
+  top: 50%;
+  left: 100%;
+  width: 20%;
+  border-top: 1px solid var(--boder-color);
+}
+
+.arrow.right.across:after {
+  left: 100%;
+  transform: translateY(-50%);
+  width: var(--arrow-head-length);
+  background: var(--boder-color);
+  clip-path: polygon(100% 50%, 0% 0%, 0% 100%);
+}
+
+.arrow.bottom.across {
+  top: 100%;
+  left: 30%;
+  width: 20%;
+  height: 20%;
+  border: 1px solid var(--boder-color);
+  border-top: 0;
+  border-right: 0;
+}
+
+.arrow.bottom.across:after {
+  top: 100%;
+  left: 100%;
+  transform: translateY(-50%);
+  width: var(--arrow-head-length);
+  background: var(--boder-color);
+  clip-path: polygon(100% 50%, 0% 0%, 0% 100%);
+}
+
+.arrow.right.down {
+  left: 100%;
+  top: 30%;
+  width: 20%;
+  height: 20%;
+  border: 1px solid var(--boder-color);
+  border-bottom: 0;
+  border-left: 0;
+}
+
+.arrow.right.down:after {
+  left: 100%;
+  top: 100%;
+  transform: translateX(-50%);
+  height: var(--arrow-head-length);
+  background: var(--boder-color);
+  clip-path: polygon(50% 100%, 0% 0%, 100% 0%);
+}
+
+.cell .block, .cell .error {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #3f3f3f;
+}
+
+.updated-cell {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(164, 231, 64, 0.51);
+}
+
+.cell .error {
+  background-color: #ff5252;
+}
+
+.cell .block.letter, .cell .error {
+  opacity: 0.5;
+  clip-path: polygon(0% 100%, 100% 0%, 100% 100%);
+}
+
+.arrow-bottom-error {
+  position: absolute;
+  top: 100%;
+  left: 30%;
+  width: 40%;
+  height: 20%;
+  background-color: #ff5252;
+  border-bottom-left-radius: 100%;
+  border-bottom-right-radius: 100%;
+}
+.arrow-right-error {
+  position: absolute;
+  left: 100%;
+  top: 30%;
+  width: 20%;
+  height: 40%;
+  background-color: #ff5252;
+  border-bottom-right-radius: 100%;
+  border-top-right-radius: 100%;
+}
+
+.cell-container {
+  width: 80px;
+  border: solid 1px var(--boder-color);
+  border-top-width: 0;
+  border-left-width: 0;
+  margin-bottom: 30px;
+  align-self: center;
+}
