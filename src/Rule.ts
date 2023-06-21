@@ -273,4 +273,22 @@ export const rules: Rule[] = [
       }
     },
   },
+  {
+    exec(cell, grid) {
+      for (const island of grid.blockIslands) {
+        if (island.size === grid.settings.maxBlockIslandSize) {
+          for (cell of island) {
+            for (const neighbor of grid.cellNeighbors(cell, true)) {
+              if (!neighbor.typeFixed) {
+                neighbor.isBlock = false;
+              }
+            }
+          }
+        }
+        if (island.size > grid.settings.maxBlockIslandSize) {
+          island.values().next().value.isBlock = false;
+        }
+      }
+    },
+  },
 ];

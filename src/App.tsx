@@ -11,23 +11,30 @@ import { Grid } from "./Grid";
 import { useCounter } from "@mantine/hooks";
 import { GridDisplay } from "./GridDisplay";
 import "./global.css";
+import GithubCorner from "react-github-corner";
 
 const X = () => {
   const settings = useSettings();
   const [count, handlers] = useCounter();
   const render = (): Promise<void> => {
     handlers.increment();
+
+    if (settings.animation === 0) {
+      return new Promise((resolve) => setTimeout(resolve, 1));
+    }
     return new Promise((resolve) =>
-      setTimeout(resolve, 2000 / (settings.width * settings.height))
+      setTimeout(
+        resolve,
+        (settings.animation * 1000) / (settings.width * settings.height)
+      )
     );
   };
   const [grid, setGrid] = useState(() => new Grid(settings, render));
   const openSettings = useOpenSettingsModal();
-  const [error, setError] = useState<boolean>(false);
 
   return (
     <>
-      <Flex gap="md" align="center">
+      <Flex gap="md" align="center" direction={{ base: "column", sm: "row" }}>
         <ActionIcon
           color="blue"
           size="lg"
@@ -37,17 +44,16 @@ const X = () => {
           <IconAdjustments />
         </ActionIcon>
         <Button
-          onClick={() => {
-            setGrid(new Grid(settings, render));
-            setError(false);
-          }}
+          onClick={() => setGrid(new Grid(settings, render))}
+          variant={settings === grid.settings ? "outline" : "filled"}
+          color={settings === grid.settings ? undefined : "green"}
         >
           Reset
         </Button>
         <Button
           onClick={() => {
             console.time("solve");
-            grid.solve();
+            grid.solve(true);
             console.timeEnd("solve");
             handlers.increment();
           }}
@@ -56,9 +62,7 @@ const X = () => {
         </Button>
         <Button
           onClick={async () => {
-            setError(false);
-            if (!(await grid.collapse())) {
-              setError(true);
+            if (!(await grid.collapse(true))) {
               grid.updatedCells.clear();
             }
             handlers.increment();
@@ -66,7 +70,7 @@ const X = () => {
         >
           Collapse
         </Button>
-        {error && (
+        {grid.error && (
           <div style={{ color: "#962411" }}>Impossible constraints</div>
         )}
       </Flex>
@@ -80,6 +84,7 @@ export default function App() {
     <MantineProvider withGlobalStyles withNormalizeCSS>
       <SettingsProvider>
         <ModalsProvider>
+          <GithubCorner href="https://github.com/nick-keller/crossword" />
           <div className="container">
             <X />
           </div>

@@ -21,6 +21,8 @@ const settingsSchema = z.object({
   blocksCanTouch: z.boolean(),
   allowWordsAlongFirstRowColumn: z.boolean(),
   blocksDensity: z.number().gte(0).lte(1),
+  maxBlockIslandSize: z.number().int().gte(1),
+  animation: z.number().int().gte(0),
 });
 
 export type Settings = z.infer<typeof settingsSchema>;
@@ -35,6 +37,8 @@ const defaultSettings: Settings = {
   blocksCanTouch: false,
   allowWordsAlongFirstRowColumn: false,
   blocksDensity: 0.3,
+  maxBlockIslandSize: 2,
+  animation: 2,
 };
 
 const SettingsContext = React.createContext<{
@@ -110,6 +114,29 @@ const SettingsModal = () => {
           step={0.01}
           label={(x) => Math.round(x * 100) + "%"}
         />
+        Max block island size
+        <Slider
+          value={settings.maxBlockIslandSize}
+          onChange={(maxBlockIslandSize) => setSettings({ maxBlockIslandSize })}
+          min={1}
+          max={20}
+          marks={[{ value: 5 }, { value: 10 }, { value: 15 }]}
+        />
+        Animation delay
+        <Slider
+          value={settings.animation}
+          onChange={(animation) => setSettings({ animation })}
+          min={0}
+          max={10}
+          marks={[{ value: 5 }]}
+        />
+        <Checkbox
+          checked={settings.allLettersMustBeConnected}
+          onChange={(e) =>
+            setSettings({ allLettersMustBeConnected: e.currentTarget.checked })
+          }
+          label="All bletters must be connected"
+        />
         <Checkbox
           checked={settings.blockMustHaveDefinition}
           onChange={(e) =>
@@ -122,7 +149,7 @@ const SettingsModal = () => {
           onChange={(e) =>
             setSettings({ blocksCanTouch: e.currentTarget.checked })
           }
-          label="Blocks can touch"
+          label="Blocks can touch sides"
         />
         <Checkbox
           checked={settings.allowWordsAlongFirstRowColumn}

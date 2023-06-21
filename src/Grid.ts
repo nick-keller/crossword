@@ -6,7 +6,9 @@ export class Grid {
   private grid: Cell[][] = [];
   public updatedCells: Set<Cell> = new Set();
   public cellsThatCausedBacktracking: Map<Cell, number> = new Map();
+  public blockIslands: Set<Cell>[] = [];
   public updated = false;
+  public error = false;
 
   constructor(
     public settings: Settings,
@@ -229,9 +231,56 @@ export class Grid {
         }
       }
     }
+
+    this.blockIslands = [];
+    const visited = new Set<Cell>();
+
+    for (let x = 0; x < this.settings.width; x++) {
+      for (let y = 0; y < this.settings.height; y++) {
+        const cell = this.grid[x][y];
+
+        if (!cell.isLetter && !visited.has(cell)) {
+          const island = new Set<Cell>();
+          this.blockIslands.push(island);
+          this.findIsland(cell, island, visited, (c) => !c.isLetter, true);
+        }
+      }
+    }
   }
 
-  solve() {
+  public cellNeighbors(cell: Cell, diagonals: boolean): Cell[] {
+    return [
+      diagonals && this.cell(cell.x - 1, cell.y - 1),
+      this.cell(cell.x, cell.y - 1),
+      diagonals && this.cell(cell.x + 1, cell.y - 1),
+      this.cell(cell.x - 1, cell.y),
+      this.cell(cell.x + 1, cell.y),
+      diagonals && this.cell(cell.x - 1, cell.y + 1),
+      this.cell(cell.x, cell.y + 1),
+      diagonals && this.cell(cell.x + 1, cell.y + 1),
+    ].filter(Boolean) as Cell[];
+  }
+
+  private findIsland(
+    cell: Cell,
+    island: Set<Cell>,
+    visited: Set<Cell>,
+    isValid: (cell: Cell) => boolean,
+    diagonals: boolean
+  ) {
+    if (!isValid(cell) || visited.has(cell)) {
+      return;
+    }
+
+    island.add(cell);
+    visited.add(cell);
+
+    for (const neighbor of this.cellNeighbors(cell, diagonals)) {
+      this.findIsland(neighbor, island, visited, isValid, diagonals);
+    }
+  }
+
+  solve(trackError = false) {
     this.measure();
     this.updated = false;
     while (this.updatedCells.size) {
@@ -249,8 +298,39 @@ export class Grid {
       }
 
       if (cell.typeError || cell.arrowRightError || cell.arrowBottomError) {
+        if (trackError) {
+          this.error = true;
+        }
         return false;
       }
+    }
+
+    if (this.settings.allLettersMustBeConnected) {
+      const letterIslands = [];
+      const visited = new Set<Cell>();
+
+      for (let x = 0; x < this.settings.width; x++) {
+        for (let y = 0; y < this.settings.height; y++) {
+          const cell = this.grid[x][y];
+
+          if (cell.isLetter && !visited.has(cell)) {
+            if (letterIslands.length) {
+              if (trackError) {
+                this.error = true;
+              }
+              return false;
+            }
+
+            const island = new Set<Cell>();
+            letterIslands.push(island);
+            this.findIsland(cell, island, visited, (c) => c.isLetter, false);
+          }
+        }
+      }
+    }
+
+    if (trackError) {
+      this.error = false;
     }
 
     return true;
@@ -307,11 +387,18 @@ export class Grid {
     this.updatedCells = new Set(state.updatedCells);
   }
 
-  async collapse() {
+  async collapse(trackError = false) {
+    if (trackError) {
+      this.error = false;
+    }
+
     const success = this.solve();
     await this.render();
 
     if (!success) {
+      if (trackError) {
+        this.error = true;
+      }
       return false;
     }
 
@@ -346,6 +433,10 @@ export class Grid {
             cell,
             (this.cellsThatCausedBacktracking.get(cell) ?? 0) + 1
           );
+          if (trackError) {
+            this.error = true;
+          }
+
           return false;
         }
       }
