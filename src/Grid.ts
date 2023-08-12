@@ -1,6 +1,8 @@
 import { Settings } from "./Settings";
 import { Cell } from "./Cell";
 import { rules } from "./Rule";
+import "../make-words.txt";
+import { collapseWords } from "./words";
 
 export class Grid {
   private grid: Cell[][] = [];
@@ -9,6 +11,7 @@ export class Grid {
   public blockIslands: Set<Cell>[] = [];
   public updated = false;
   public error = false;
+  public gridFixed = false;
 
   constructor(
     public settings: Settings,
@@ -280,6 +283,64 @@ export class Grid {
     }
   }
 
+  solveWords(trackError = false) {
+    let updated = true;
+
+    while (updated) {
+      for (let x = 0; x < this.settings.width; x++) {
+        for (let y = 0; y < this.settings.height; y++) {
+          if (this.grid[x][y].isBlock) {
+            continue;
+          }
+
+          if (this.grid[x][y].lettersBottom + 1 < this.settings.minWordLength) {
+            continue;
+          }
+
+          const cells = [];
+
+          for (let i = 0; i <= this.grid[x][y].lettersBottom; i++) {
+            cells.push(this.grid[x][y + i]);
+          }
+          y += this.grid[x][y].lettersBottom;
+
+          try {
+            updated = collapseWords(cells);
+          } catch (e) {
+            return false;
+          }
+        }
+      }
+
+      for (let y = 0; y < this.settings.height; y++) {
+        for (let x = 0; x < this.settings.width; x++) {
+          if (this.grid[x][y].isBlock) {
+            continue;
+          }
+
+          if (this.grid[x][y].lettersRight + 1 < this.settings.minWordLength) {
+            continue;
+          }
+
+          const cells = [];
+
+          for (let i = 0; i <= this.grid[x][y].lettersRight; i++) {
+            cells.push(this.grid[x + i][y]);
+          }
+          x += this.grid[x][y].lettersRight;
+
+          try {
+            updated = collapseWords(cells);
+          } catch (e) {
+            return false;
+          }
+        }
+      }
+    }
+
+    return true;
+  }
+
   solve(trackError = false) {
     this.measure();
     this.updated = false;
@@ -362,6 +423,29 @@ export class Grid {
       }
     }
 
+    if (!cell) {
+      this.gridFixed = true;
+    }
+
+    return cell;
+  }
+
+  leastEntropyNonFixedCellLetter(): Cell | null {
+    let cell: Cell | null = null;
+    let entropy = Infinity;
+
+    for (const c of this.cells) {
+      const e = c.letters.size;
+      if (e < entropy && c.letters.size > 1) {
+        entropy = e;
+        cell = c;
+      }
+    }
+
+    // if (!cell) {
+    //   this.gridFixed = true;
+    // }
+
     return cell;
   }
 
@@ -385,6 +469,58 @@ export class Grid {
     }
 
     this.updatedCells = new Set(state.updatedCells);
+  }
+
+  async collapseWords(trackError = false) {
+    if (trackError) {
+      this.error = false;
+    }
+
+    const success = this.solveWords();
+    await this.render();
+
+    if (!success) {
+      if (trackError) {
+        this.error = true;
+      }
+      return false;
+    }
+
+    let cell = this.leastEntropyNonFixedCellLetter();
+
+    if (cell) {
+      const state = this.saveState();
+
+      const letter = [...cell.letters][
+        Math.floor(Math.random() * cell.letters.size)
+      ];
+      cell.letters.clear();
+      cell.letters.add(letter);
+
+      const success = await this.collapseWords();
+
+      if (!success) {
+        // this.restoreState(state);
+        //
+        // cell.letters.delete(letter);
+        //
+        // const success = await this.collapseWords();
+        //
+        // if (!success) {
+        //   this.cellsThatCausedBacktracking.set(
+        //     cell,
+        //     (this.cellsThatCausedBacktracking.get(cell) ?? 0) + 1
+        //   );
+        //   if (trackError) {
+        //     this.error = true;
+        //   }
+        //
+        //   return false;
+        // }
+      }
+    }
+
+    return true;
   }
 
   async collapse(trackError = false) {

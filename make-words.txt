@@ -1,0 +1,21 @@
+import fs from "fs";
+import csv from "csv-parser";
+
+const results: Record<number, Record<string, string[]>> = {};
+
+fs.createReadStream("./src/nytcrosswords.csv")
+  .pipe(csv({ separator: "," }))
+  .on("data", (data) => {
+    if (data.Clue.match(/\d\d-(across|down)/i) || !data.Word.trim()) {
+      return;
+    }
+    results[data.Word.length] ??= {};
+    results[data.Word.length][data.Word] ??= [];
+
+    if (results[data.Word.length][data.Word].length < 3) {
+      results[data.Word.length][data.Word].push(data.Clue);
+    }
+  })
+  .on("end", () => {
+    fs.writeFile("./src/nytcrosswords.json", JSON.stringify(results), () => {});
+  });

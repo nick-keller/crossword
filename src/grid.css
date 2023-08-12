@@ -123,13 +123,24 @@
   clip-path: polygon(50% 100%, 0% 0%, 100% 0%);
 }
 
-.cell .block, .cell .error {
+.cell .block, .cell .error, .cell .letter {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
   background-color: #3f3f3f;
+  clip-path: polygon(0% 100%, 0% 0%, 100% 0%, 100% 100%);
+  transition: clip-path 0.1s;
+}
+
+.cell .letter, .cell .error {
+  clip-path: polygon(0% 100%, 100% 100%, 100% 0%, 100% 100%);
+}
+
+.cell .block.letter, .cell .error {
+  opacity: 0.5;
+  clip-path: polygon(0% 100%, 50% 50%, 100% 0%, 100% 100%);
 }
 
 .updated-cell {
@@ -141,13 +152,31 @@
   background-color: rgba(164, 231, 64, 0.51);
 }
 
-.cell .error {
-  background-color: #ff5252;
+.letters-container {
+  --letters: 26;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(128, 187, 225, calc((var(--letters) - 1) / 25));
 }
 
-.cell .block.letter, .cell .error {
-  opacity: 0.5;
-  clip-path: polygon(0% 100%, 100% 0%, 100% 100%);
+.letter-value {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  font-size: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: calc(1 / var(--letters));
+}
+
+.cell .error {
+  background-color: #ff5252;
 }
 
 .arrow-bottom-error {

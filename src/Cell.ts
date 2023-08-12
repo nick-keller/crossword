@@ -21,6 +21,34 @@ export class Cell {
   private _lettersTop: number = Infinity;
   private _fixedLettersTop: number = 0;
   private _fixedLettersLeft: number = 0;
+  public letters: Set<string> = new Set([
+    "A",
+    "B",
+    "C",
+    "D",
+    "E",
+    "F",
+    "G",
+    "H",
+    "I",
+    "J",
+    "K",
+    "L",
+    "M",
+    "N",
+    "O",
+    "P",
+    "Q",
+    "R",
+    "S",
+    "T",
+    "U",
+    "V",
+    "W",
+    "X",
+    "Y",
+    "Z",
+  ]);
 
   constructor(
     public x: number,

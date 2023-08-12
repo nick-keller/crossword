@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { CSSProperties, FC } from "react";
 import { Grid } from "./Grid";
 import clx from "classnames";
 import { Cell } from "./Cell";
@@ -54,7 +54,19 @@ export const CellDisplay: FC<{
           letter: cell.isLetter,
         })}
       />
-      {grid.updatedCells.has(cell) && <div className="updated-cell" />}
+      {grid.gridFixed && cell.isLetter && (
+        <div
+          className="letters-container"
+          style={{ "--letters": cell.letters.size } as CSSProperties}
+        >
+          {cell.letters.size < 5 &&
+            [...cell.letters].map((letter) => (
+              <span key={letter} className="letter-value">
+                {letter}
+              </span>
+            ))}
+        </div>
+      )}
     </div>
   );
 };

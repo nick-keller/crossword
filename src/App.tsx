@@ -22,6 +22,7 @@ const X = () => {
     if (settings.animation === 0) {
       return new Promise((resolve) => setTimeout(resolve, 1));
     }
+
     return new Promise((resolve) =>
       setTimeout(
         resolve,
@@ -64,6 +65,8 @@ const X = () => {
           onClick={async () => {
             if (!(await grid.collapse(true))) {
               grid.updatedCells.clear();
+            } else {
+              await grid.collapseWords(true);
             }
             handlers.increment();
           }}
